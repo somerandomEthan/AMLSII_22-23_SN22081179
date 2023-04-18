@@ -71,21 +71,47 @@ def convert_image(img, source, target):
 def image_padding(img, padding_size):
     """
     Pad an image with zeros.
-
     :param img: image
     :param padding_size: padding size
     :return: padded image
     """
     width, _ = img.size
     if width < int(padding_size+1/2):
-        # Pad the low resolution(lr) image to 1280*800
+        # Pad the low resolution(lr) image to half the size of the high resolution(hr) image(square) using zero padding
 
         img= ImageOps.pad(img, size=(int(padding_size/2), int(padding_size/2)),centering=(0.5, 0.5))
 
     else :
-        # Take the largest possible center-crop of it such that its dimensions are perfectly divisible by the scaling factor
+        # Pad the high resolution(hr) image to the desired size(square)
         img= ImageOps.pad(img, size=(int(padding_size), int(padding_size)),centering=(0.5, 0.5))
 
+    return img
+
+def image_crop(img, crop_size):
+    """
+    Crop an image to the desired size.
+
+    :param img: image
+    :param crop_size: crop size
+    :return: cropped image
+    """
+
+   
+    if img.width < int(1022):
+        # Crop the low resolution(lr) image to half the size of the high resolution(hr) image(square)
+        left = (img.width - int(crop_size/2))/2
+        top = (img.height - int(crop_size/2))/2
+        right = (img.width + int(crop_size/2))/2
+        bottom = (img.height + int(crop_size/2))/2 
+
+    else :
+        # Crop the high resolution(hr) image to the desired size(square)
+        left = (img.width - crop_size)/2
+        top = (img.height - crop_size)/2
+        right = (img.width + crop_size)/2
+        bottom = (img.height + crop_size)/2 
+    
+    img= img.crop((left, top, right, bottom))
 
 
     return img
@@ -112,32 +138,52 @@ class ImageTransforms(object):
     Image transformation pipeline.
     """
 
-    def __init__(self, split, width, scaling_factor):
+    def __init__(self, process, desired_size, lr_img_type, hr_img_type):
         """
-        :param split: one of 'lr' or 'hr'
-        :param crop_size: crop size of HR images
-        :param scaling_factor: LR images will be downsampled from the HR images by this factor
-        :param lr_img_type: the target format for the LR image; see convert_image() above for available formats
-        :param hr_img_type: the target format for the HR image; see convert_image() above for available formats
+        :param process: process type, one of 'crop' or 'padding'
+        :param desired_size: desired image size
+        :param source_type: source image format, one of 'pil' (PIL image), '[0, 255]', '[0, 1]', '[-1, 1]' (pixel value ranges)
+        :param target_type: target image format, one of 'pil' (PIL image), '[0, 255]', '[0, 1]', '[-1, 1]' (pixel value ranges),
+                            'imagenet-norm' (pixel values standardized by imagenet mean and std.), 'y-channel' (luminance   channel Y in the YCbCr color format, used to calculate PSNR and SSIM)                                                                                
         """
-        self.split = split.lower()
-        self.width = width
-        self.scaling_factor = scaling_factor
+        self.process = process.lower()
+        self.desired_size = desired_size
+        self.lr_img_type = lr_img_type
+        self.hr_img_type = hr_img_type
 
 
-        assert self.split in {'train', 'test'}
+        assert self.process in {'crop', 'padding'}
+        # assert self.source_type in {'pil', '[0, 1]', '[-1, 1]'}, "Cannot convert from source format %s!" % self.source_type
+        # assert self.target_type in {'pil', '[0, 255]', '[0, 1]', '[-1, 1]', 'imagenet-norm',
+        #               'y-channel'}, "Cannot convert to target format %s!" % self.target_type
 
     def __call__(self, img):
         """
         :param img: a PIL source image from which the HR image will be cropped, and then downsampled to create the LR image
         :return: LR and HR images in the specified format
         """
-        # horizontal flip
-        img = image_flip(img)
+        if self.desired_size is None:
+            # Convert the LR and HR image to the required type
+            if img.width < int(1022):
+                img = convert_image(img, source='pil', target=self.lr_img_type)
+            else :
+                img = convert_image(img, source='pil', target=self.hr_img_type)
+            return img
+        else:
+            _width = img.width
+            if self.process == 'crop':
+                img = image_crop(img, crop_size=self.desired_size)
+            elif self.process == 'padding':
+                img = image_flip(img)
+                img = image_padding(img, padding_size=self.desired_size)
 
-        img = image_padding(img, padding_size=self.width)
-        img = convert_image(img, source='pil', target='[0, 1]')
-        return img
+            # Convert the LR and HR image to the required type
+            if _width < int(1022):
+                img = convert_image(img, source='pil', target=self.lr_img_type)
+            else :
+                img = convert_image(img, source='pil', target=self.hr_img_type)
+
+            return img
 
 
 class AverageMeter(object):
@@ -153,12 +199,14 @@ class AverageMeter(object):
         self.avg = 0
         self.sum = 0
         self.count = 0
+        # self.list = []
 
     def update(self, val, n=1):
         self.val = val
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+        # self.list.append(val)
 
 
 def clip_gradient(optimizer, grad_clip):
