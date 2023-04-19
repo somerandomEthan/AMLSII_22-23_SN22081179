@@ -8,15 +8,9 @@ To Begin with, it is required to clone this project or download to your computer
 ### AMLSII_22-23_SN22081179
 
 * [A/](./A)
-<<<<<<< HEAD
   * [datasets.py](./A/datasets.py)
 * [B/](./B)
   * [datasets.py](./B/datasets.py)
-=======
-  * [datasets.py](.\A\datasets.py)
-* [B/](.\B)
-  * [datasets.py](.\B\datasets.py)
->>>>>>> 6b21e57d8d7695e57c505c74f2b8473761ac9c77
 * Datasets/
   * DIV2K_train_HR/
   * DIV2K_train_LR_bicubic_X2/
