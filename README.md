@@ -7,7 +7,7 @@ To Begin with, it is required to clone this project or download to your computer
 
 ### AMLSII_22-23_SN22081179
 
-* [A/](.\A)
+* [A/](./A)
   * [datasets.py](.\A\datasets.py)
 * [B/](.\B)
   * [datasets.py](.\B\datasets.py)
