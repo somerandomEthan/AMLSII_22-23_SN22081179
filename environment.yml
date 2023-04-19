@@ -1,4 +1,4 @@
-name: null
+name: amls2
 channels:
   - pytorch
   - nvidia
@@ -442,4 +442,4 @@ dependencies:
     - w3lib==1.21.0
     - wcwidth==0.2.5
     - yapf==0.31.0
-prefix: /home/uceeibc/p3-env
+# prefix: /home/uceeibc/p3-env
