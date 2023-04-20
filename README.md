@@ -34,6 +34,7 @@ To Begin with, it is required to clone this project or download to your computer
 * [train_srgan_B.py](./train_srgan_B.py)
 * [train_srresnet_A.py](./train_srresnet_A.py)
 * [train_srresnet_B.py](./train_srresnet_B.py)
+* [super_resolve_A.py](./super_resolve_A.py)
 
 The folder Datasets is not included, you can either download the required Datesets according to the file tree or you can download the zip file [here](https://drive.google.com/file/d/10lEX7Jo9BJv3Ve2bW1-RuMCyoY3MJ0l8/view?usp=sharing). The checkpoints can also be downloaded [here](https://drive.google.com/file/d/1IwYsMsFN71HugFLTRjOX1CGaXkLCsBis/view?usp=sharing) in case you accidentally updated the original one during the training process.
 
@@ -74,11 +75,15 @@ If the output is `True`, then congratulation that you can start from the trainin
 
 * [eval_srresnet_A.py](./eval_srresnet_A.py)
 * [eval_srgan_A.py](./eval_srgan_A.py)
-`
+
 
 #### For task B it would be executing:
 
 
 * [eval_srresnet_B.py](./eval_srresnet_B.py)
 * [eval_srgan_B.py](./eval_srgan_B.py)
+
+#### To generate the image with subplot of upsamapled image and the original image for comparision run:
+
+* [super_resolve_A.py](./super_resolve_A.py)
 
